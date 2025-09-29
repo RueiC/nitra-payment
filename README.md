@@ -6,6 +6,8 @@ A lightweight front-end payment UI example (Vue 3 + Quasar + TypeScript). This p
 
 ## DEMO
 
+[View demo](https://nitra-payment.vercel.app/)
+
 ---
 
 ## Key Features
