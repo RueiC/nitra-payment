@@ -1,0 +1,32 @@
+{
+  "name": "nitra-payment",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@quasar/extras": "^1.17.0",
+    "decimal.js": "^10.6.0",
+    "pinia": "^3.0.3",
+    "quasar": "^2.18.5",
+    "vue": "^3.5.21"
+  },
+  "devDependencies": {
+    "@quasar/vite-plugin": "^1.10.0",
+    "@types/decimal.js": "^0.0.32",
+    "@types/node": "^24.5.2",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.8.1",
+    "autoprefixer": "^10.4.21",
+    "jsdom": "^27.0.0",
+    "sass-embedded": "^1.92.1",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.6",
+    "vue-tsc": "^3.0.7"
+  }
+}

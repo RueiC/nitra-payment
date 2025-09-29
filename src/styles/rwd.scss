@@ -1,0 +1,47 @@
+@use 'sass:map';
+
+$breakpoints: (
+  'md': 768px,
+  /* 可以再擴增 */
+);
+
+@mixin media-up($key) {
+  @if not map.has-key($breakpoints, $key) {
+    @error "Breakpoint key `#{$key}` not found in $breakpoints map.";
+  }
+
+  $breakpoint: map.get($breakpoints, $key);
+
+  @media (min-width: $breakpoint) {
+    @content;
+  }
+}
+
+@mixin media-down($key) {
+  @if not map.has-key($breakpoints, $key) {
+    @error "Breakpoint key `#{$key}` not found in $breakpoints map.";
+  }
+
+  $breakpoint: map.get($breakpoints, $key);
+
+  @media (max-width: $breakpoint - 1px) {
+    @content;
+  }
+}
+
+@mixin media-between($minKey, $maxKey) {
+  @if not map.has-key($breakpoints, $minKey) {
+    @error "Min breakpoint key `#{$minKey}` not found in $breakpoints map.";
+  }
+
+  @if not map.has-key($breakpoints, $maxKey) {
+    @error "Max breakpoint key `#{$maxKey}` not found in $breakpoints map.";
+  }
+
+  $min: map.get($breakpoints, $minKey);
+  $max: map.get($breakpoints, $maxKey);
+
+  @media (min-width: $min) and (max-width: $max - 1px) {
+    @content;
+  }
+}

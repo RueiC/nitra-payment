@@ -1,0 +1,121 @@
+@import './rwd.scss';
+
+:root {
+  font-family: 'Inter', sans-serif;
+}
+
+$custom-colors: (
+  'gray-0': #f4f5f6,
+  'gray-50': #ebeeef,
+  'gray-100': #e3e6e8,
+  'gray-200': #d5dadc,
+  'gray-300': #c6cdd0,
+  'gray-400': #abb5ba,
+  'gray-500': #8f9ca3,
+  'gray-600': #73838c,
+  'gray-700': #5c6970,
+  'gray-800': #454f54,
+  'gray-900': #2e3538,
+
+  'teal-0': #eef6f7,
+  'teal-50': #cbe5e6,
+  'teal-100': #a9d4d6,
+  'teal-200': #86c2c5,
+  'teal-300': #64b1b5,
+  'teal-400': #4a979b,
+  'teal-500': #3a7679,
+  'teal-600': #2e5e60,
+  'teal-700': #264d4f,
+  'teal-800': #1e3c3e,
+  'teal-900': #162b2d,
+
+  'green-0': #eafbf4,
+  'green-50': #ccf5e4,
+  'green-100': #a1edcd,
+  'green-200': #76e5b6,
+  'green-300': #4ddda0,
+  'green-400': #1cd084,
+  'green-500': #15b471,
+  'green-600': #11925c,
+  'green-700': #0d7248,
+  'green-800': #095234,
+  'green-900': #063723,
+
+  'yellow-0': #fffef5,
+  'yellow-50': #fffce5,
+  'yellow-100': #fff9cc,
+  'yellow-200': #fff6b3,
+  'yellow-300': #fff18a,
+  'yellow-400': #ffe624,
+  'yellow-500': #fadd00,
+  'yellow-600': #dec60c,
+  'yellow-700': #b8a40a,
+  'yellow-800': #918108,
+  'yellow-900': #6a5f06,
+
+  'amber-0': #fdf7ed,
+  'amber-50': #fbeeda,
+  'amber-100': #f9e5c7,
+  'amber-200': #f6d4a2,
+  'amber-300': #f1bf74,
+  'amber-400': #ecaa46,
+  'amber-500': #e89519,
+  'amber-600': #c27d14,
+  'amber-700': #9d6510,
+  'amber-800': #7d500d,
+  'amber-900': #583809,
+
+  'orange-0': #fff2eb,
+  'orange-50': #fee5d7,
+  'orange-100': #fed5be,
+  'orange-200': #fdb48c,
+  'orange-300': #fc945a,
+  'orange-400': #fb7429,
+  'orange-500': #eb5704,
+  'orange-600': #c94a03,
+  'orange-700': #a13b02,
+  'orange-800': #792c02,
+  'orange-900': #501d01,
+
+  'red-0': #fdf1f1,
+  'red-50': #fce4e4,
+  'red-100': #f6b7b7,
+  'red-200': #f08a8a,
+  'red-300': #ea5d5d,
+  'red-400': #e43030,
+  'red-500': #c71a1a,
+  'red-600': #991414,
+  'red-700': #831111,
+  'red-800': #6c0e0e,
+  'red-900': #480909,
+);
+
+$font-size: (
+  'xss': 0.625rem,
+  // 10px
+  'xs': 0.75rem,
+  // 12px
+  'sm': 0.875rem,
+  // 14px
+  'md': 1rem,
+  // 16px
+  'lg': 1.125rem,
+  // 18px
+  'xl': 1.25rem,
+  // 20px
+  '2xl': 1.5rem,
+  // 24px
+  '3xl': 2rem,
+  // 32px
+  '4xl': 2.25rem,
+  // 36px
+  '5xl': 3rem,
+  // 48px
+  '6xl': 3.75rem,
+  // 60px
+  '7xl': 4.5rem,
+  // 72px
+  '8xl': 6rem,
+  // 96px
+  '9xl': 8rem // 128px,,,,,,,,,,,,,,
+);
