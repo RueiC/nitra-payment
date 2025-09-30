@@ -11,19 +11,39 @@ import { useLoading } from '@/services/composables/useLoading';
 import BaseModal from '@/presentation/components/modals/BaseModal.vue';
 import Button from '@/presentation/components/Button.vue';
 
+// Emit 'close' to the parent modal wrapper when this modal should be closed.
 const emit = defineEmits(['close']);
 
+// Store and small helpers used by this modal.
 const transactionStore = useTransactionStore();
 const { activeCounter, destroyCounter } = useCounter();
 const { isLoading, setLoading } = useLoading();
+
+// Countdown seconds shown in the UI before automatic processing.
 const countdown = ref<number>(5);
 
+/**
+ * Reset the visible countdown to the provided value (default 5 seconds).
+ *
+ * @param {number} [value=5] - Number of seconds to reset the countdown to.
+ * @returns {void}
+ */
 const resetCountdown = (value = 5) => {
   countdown.value = value;
 };
 
+/**
+ * Process a reader-based payment. This function guards against concurrent
+ * submissions using `isLoading`, stops the running countdown timer, and
+ * delegates submission to the transaction store. On success it resets the
+ * countdown, notifies the user and closes the modal. Errors are logged and
+ * shown to the user via notifications.
+ *
+ * @returns {Promise<void>} Resolves when processing completes or fails.
+ */
 async function handleProcessPayment(): Promise<void> {
   if (isLoading.value) return;
+  // stop the auto-countdown when manually triggering processing
   destroyCounter();
   setLoading(true);
 
@@ -52,12 +72,20 @@ async function handleProcessPayment(): Promise<void> {
   }
 }
 
+/**
+ * Close the modal and clear any running countdown timer.
+ *
+ * @returns {void}
+ */
 function handleCloseModal(): void {
   destroyCounter();
   resetCountdown();
   emit('close');
 }
 
+// Start a one-second interval when the component mounts to decrement the
+// countdown. When the countdown reaches zero, automatically trigger
+// `handleProcessPayment`.
 onMounted(() => {
   activeCounter(() => {
     if (countdown.value <= 0) {
@@ -68,6 +96,8 @@ onMounted(() => {
   }, 1000);
 });
 
+// Ensure the interval is cleared and the countdown reset when the
+// component unmounts to avoid leaks or stray timers.
 onUnmounted(() => {
   destroyCounter();
   resetCountdown();

@@ -1,14 +1,15 @@
 <script setup lang="ts">
+import Decimal from 'decimal.js';
 import { ref, computed } from 'vue';
 // --- SERVICES ---
 import { useTransactionStore } from '@/services/stores/transactionStore';
 import { FeeStrategyFactory } from '@/services/factories/FeeStrategyFactory';
 // --- GLOBAL COMPONENTS ---
 import BaseModal from '@/presentation/components/modals/BaseModal.vue';
-import Decimal from 'decimal.js';
+import Button from '@/presentation/components/Button.vue';
 // --- UTILS ---
 import { formatCurrency } from '@/utils/formatter';
-
+// --- CONSTANTS ---
 import {
   FALLBACK_ZERO_PERCENTAGE_STRING,
   FALLBACK_ZERO_STRING,
@@ -16,22 +17,27 @@ import {
   DEFAULT_DECIMAL_PLACES,
 } from '@/constant/index';
 
-import Button from '@/presentation/components/Button.vue';
-
+// Emit 'close' to the parent modal when the user finishes editing.
 const emit = defineEmits(['close']);
+// Access the transaction store for reading and persisting processing fee values.
 const transactionStore = useTransactionStore();
 
+// Strategy used to compute fees based on the current payment method.
 const strategy = FeeStrategyFactory.create(
   transactionStore.transaction.paymentMethod,
 );
 
+/**
+ * Merchant percentage is the remainder of the organization's total processing
+ * percentage after subtracting the patient's percentage for the transaction.
+ */
 const merchantPercentage = computed<Decimal>(() => {
   return transactionStore.totalProcessingFeePercentage.minus(
     patientPercentage.value,
   );
 });
 
-// numeric binding for QSlider (which expects a number)
+// Numeric binding for QSlider which expects a plain number rather than Decimal.
 const merchantPercentageForSlider = computed({
   get: (): number => {
     return Number(merchantPercentage.value.toFixed(DEFAULT_DECIMAL_PLACES));
@@ -45,12 +51,18 @@ const merchantPercentageForSlider = computed({
   },
 });
 
+/**
+ * Merchant fixed amount in cents calculated as the organization's fixed
+ * processing fee minus the patient's fixed fee contribution.
+ */
 const merchantFixedInCents = computed<Decimal>(() => {
   return transactionStore.totalProcessingFeeFixedInCents.minus(
     patientFixedInCents.value,
   );
 });
 
+// Local editable copies of the patient's processing fee values. These start
+// with the store's current values and are written back on submit.
 const patientPercentage = ref<Decimal>(
   transactionStore.patientProcessingFeePercentage,
 );
@@ -59,6 +71,10 @@ const patientFixedInCents = ref<Decimal>(
   transactionStore.patientProcessingFeeFixedInCents,
 );
 
+/**
+ * Two-way computed that presents the patient's percentage as a string for
+ * input fields and parses updates back into a Decimal.
+ */
 const patientPercentageForInput = computed({
   get: () => {
     return (
@@ -68,11 +84,15 @@ const patientPercentageForInput = computed({
   },
   set: (newPercentageValue) => {
     patientPercentage.value = new Decimal(
-      newPercentageValue ?? FALLBACK_ZERO_STRING,
+      newPercentageValue ?? FALLBACK_ZERO_PERCENTAGE_STRING,
     );
   },
 });
 
+/**
+ * Two-way computed for the patient's fixed dollar amount (displayed in dollars).
+ * Internally stored as cents; conversions apply PERCENTAGE_DIVISOR accordingly.
+ */
 const patientFixedForInput = computed({
   get: () => {
     return (
@@ -88,6 +108,10 @@ const patientFixedForInput = computed({
   },
 });
 
+/**
+ * Two-way computed for merchant percentage input. Writing here updates the
+ * patient's percentage so the two always add up to the org's total.
+ */
 const merchantPercentageForInput = computed({
   get: () => {
     return (
@@ -97,7 +121,7 @@ const merchantPercentageForInput = computed({
   },
   set: (newPercentageValue) => {
     const newMerchantPercentage = new Decimal(
-      newPercentageValue ?? FALLBACK_ZERO_STRING,
+      newPercentageValue ?? FALLBACK_ZERO_PERCENTAGE_STRING,
     );
     patientPercentage.value =
       transactionStore.totalProcessingFeePercentage.minus(
@@ -106,6 +130,10 @@ const merchantPercentageForInput = computed({
   },
 });
 
+/**
+ * Two-way computed for merchant fixed dollar input. Writing here adjusts
+ * the patient's fixed cents so totals remain consistent with the org value.
+ */
 const merchantFixedForInput = computed({
   get: () => {
     return (
@@ -125,6 +153,9 @@ const merchantFixedForInput = computed({
   },
 });
 
+/**
+ * Compute the merchant's fee in cents using the current fee strategy.
+ */
 const merchantFeeInCents = computed(() => {
   return strategy.calculate(
     transactionStore.transaction,
@@ -133,6 +164,10 @@ const merchantFeeInCents = computed(() => {
   );
 });
 
+/**
+ * Compute the patient's fee in cents using the current fee strategy and the
+ * editable patient percentage/fixed values.
+ */
 const patientFeeInCents = computed(() => {
   return strategy.calculate(
     transactionStore.transaction,
@@ -141,17 +176,33 @@ const patientFeeInCents = computed(() => {
   );
 });
 
+/**
+ * Reset the patient's processing fee to zero (both percentage and fixed).
+ *
+ * @returns {void}
+ */
 function setPatientProcessingFeeToZero(): void {
   patientPercentage.value = new Decimal(FALLBACK_ZERO_STRING);
   patientFixedInCents.value = new Decimal(FALLBACK_ZERO_STRING);
 }
 
+/**
+ * Persist the edited patient processing fee values back to the transaction store
+ * and close the modal.
+ *
+ * @returns {void}
+ */
 function handleSubmit(): void {
   transactionStore.patientProcessingFeePercentage = patientPercentage.value;
   transactionStore.patientProcessingFeeFixedInCents = patientFixedInCents.value;
   emit('close');
 }
 
+/**
+ * Close the modal without persisting changes.
+ *
+ * @returns {void}
+ */
 function handleCloseModal(): void {
   emit('close');
 }

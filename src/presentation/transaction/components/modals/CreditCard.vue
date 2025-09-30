@@ -9,12 +9,11 @@ import { useTransactionStore } from '@/services/stores/transactionStore';
 import { useLoading } from '@/services/composables/useLoading';
 // --- GLOBAL COMPONENTS ---
 import BaseModal from '@/presentation/components/modals/BaseModal.vue';
+import Button from '@/presentation/components/Button.vue';
 // --- CONSTANTS ---
 import { mockCountries } from '@/constant/index';
 // --- UTILS ---
 import { formatCurrency } from '@/utils/formatter';
-import Button from '@/presentation/components/Button.vue';
-
 import {
   isRequired,
   isValidCardNumber,
@@ -22,12 +21,19 @@ import {
   isValidCvc,
 } from '@/utils/validators';
 
+// Emit events to parent (only 'close' in this modal)
 const emit = defineEmits(['close']);
 
+// Access the transaction store and a small loading composable used to
+// prevent duplicate submissions and show loading states in the UI.
 const transactionStore = useTransactionStore();
 const { isLoading, setLoading } = useLoading();
 
+// Reference to the Quasar form component used for validation.
 const creditCardForm = ref<QForm | null>(null);
+
+// Local form model for credit card details. Written to the transaction store
+// when validation passes and the user submits the form.
 const creditCardDetails = ref({
   name: '',
   cardNumber: '',
@@ -37,6 +43,14 @@ const creditCardDetails = ref({
   zip: '',
 });
 
+/**
+ * Submit credit card payment details via the transaction store.
+ * Guards against concurrent submissions using `isLoading` and updates the
+ * loading state via `setLoading`. On success it notifies the user and
+ * closes the modal; on failure it shows an error notification.
+ *
+ * @returns {Promise<void>} Resolves when submission completes or fails.
+ */
 async function handleSubmit(): Promise<void> {
   if (isLoading.value) return;
   setLoading(true);
@@ -64,10 +78,21 @@ async function handleSubmit(): Promise<void> {
   }
 }
 
+/**
+ * Close the modal by emitting the 'close' event to the parent.
+ *
+ * @returns {void}
+ */
 function handleCloseModal(): void {
   emit('close');
 }
 
+/**
+ * Trigger client-side form validation and, if successful, copy the
+ * local form model into the transaction store and submit the transaction.
+ *
+ * @returns {Promise<void>} Resolves after validation and conditional submit.
+ */
 async function handleTriggerValidation(): Promise<void> {
   if (!creditCardForm.value) return;
 

@@ -1,38 +1,45 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue';
-import { ReaderStatus } from '@/models/enums';
 import { Notify } from 'quasar';
 // --- MODEL ---
 import { PaymentMethod, TransactionMethod } from '@/models/enums/index';
+import { ReaderStatus } from '@/models/enums';
 // --- SERVICES ---
 import { useTransactionStore } from '@/services/stores/transactionStore';
 import { useLocationSelector } from '@/services/composables/useLocationSelector';
+import { FeeStrategyFactory } from '@/services/factories/FeeStrategyFactory';
+import { useLoading } from '@/services/composables/useLoading';
 // --- UTILS ---
 import { formatCurrency } from '@/utils/formatter';
 // --- GLOBAL COMPONENTS ---
 import Button from '@/presentation/components/Button.vue';
 // --- LOCAL COMPONENTS ---
 import SubtotalItem from '@/presentation/transaction/components/SubtotalItem.vue';
-
+// --- CONSTANTS ---
 import {
   PERCENTAGE_DIVISOR,
   DEFAULT_DECIMAL_PLACES,
   MINIMUM_TOTAL_AMOUNT_IN_CENTS,
 } from '@/constant/index';
-import { FeeStrategyFactory } from '@/services/factories/FeeStrategyFactory';
-import { useLoading } from '@/services/composables/useLoading';
 
+// Transaction store and composables used by this summary component.
 const transactionStore = useTransactionStore();
 const { locationOptions, selectedLocationId } = useLocationSelector();
 const { isLoading, setLoading } = useLoading();
 
+// Fee strategy instance for card payments. Used to calculate the patient's fee.
 const strategy = FeeStrategyFactory.create(PaymentMethod.Card);
 
+// Injected providers from the parent view for modal control.
 const ModalKey = inject<any>('ModalKey');
 const handleOpenModal = inject<((k: any) => void) | undefined>(
   'handleOpenModal',
 );
 
+/**
+ * Whether the current total amount is below the required minimum.
+ * Used to disable actions when the total is negative or under the minimum.
+ */
 const belowMinimumTotalAmount = computed<boolean>(() => {
   return (
     transactionStore.transaction.totalAmountInCents.lessThan(0) ||
@@ -42,6 +49,10 @@ const belowMinimumTotalAmount = computed<boolean>(() => {
   );
 });
 
+/**
+ * Options for the reader select control. Filters readers by the selected
+ * location and maps to a UI-friendly option shape with display classes.
+ */
 const readerOptions = computed(() => {
   const readers =
     transactionStore.paymentReaders?.filter((reader) => {
@@ -66,6 +77,10 @@ const readerOptions = computed(() => {
   }));
 });
 
+/**
+ * Two-way computed binding for the selected reader id. Writing to this
+ * computed updates the transaction store's selected reader.
+ */
 const selectedReaderId = computed({
   get(): number | null {
     return transactionStore.transaction.selectedReaderId ?? null;
@@ -76,12 +91,19 @@ const selectedReaderId = computed({
   },
 });
 
+/**
+ * Human-readable tax rate string for display (e.g. "5.00").
+ */
 const formattedTaxRate = computed(() => {
   return transactionStore.currentTaxRate
     .times(PERCENTAGE_DIVISOR)
     .toFixed(DEFAULT_DECIMAL_PLACES);
 });
 
+/**
+ * Total amount customer would pay when using a card (subtotal + patient fee).
+ * Calculated using the card fee strategy to include processing fees.
+ */
 const payByCardAmount = computed(() => {
   const fee = strategy.calculate(
     transactionStore.transaction,
@@ -92,12 +114,24 @@ const payByCardAmount = computed(() => {
   return transactionStore.subtotal.plus(fee).toNumber();
 });
 
+/**
+ * Safely invoke parent-provided modal opener if available.
+ *
+ * @param {any} key - Modal key to open.
+ * @returns {void}
+ */
 function safeInvokeHandleOpenModal(key: any): void {
   if (typeof handleOpenModal === 'function') {
     handleOpenModal(key);
   }
 }
 
+/**
+ * Submit a cash transaction via the transaction store. Uses `useLoading`
+ * to guard concurrent submissions and displays success/error notifications.
+ *
+ * @returns {Promise<void>} Resolves when the submission finishes.
+ */
 const handleSubmitCashTransaction = async () => {
   try {
     if (isLoading.value) return;

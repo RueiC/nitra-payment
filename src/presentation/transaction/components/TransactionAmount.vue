@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import Decimal from 'decimal.js';
 // --- SERVICES ---
 import { useTransactionStore } from '@/services/stores/transactionStore';
-
+// --- CONSTANTS ---
 import {
   FALLBACK_ZERO_STRING,
   PERCENTAGE_DIVISOR,
@@ -11,8 +11,17 @@ import {
   MAX_LENGTH_OF_AMOUNT,
 } from '@/constant/index';
 
+// Access the transaction store for reading and updating transaction state
 const transactionStore = useTransactionStore();
 
+/**
+ * Two-way computed string used for the amount input field.
+ * - Getter converts internal cents (Decimal) into a dollar string for the UI.
+ * - Setter converts the entered dollar string back into cents (Decimal) and
+ *   updates the store via `updatePaymentAmount`.
+ *
+ * @type {import('vue').ComputedRef<string>}
+ */
 const amountForInput = computed<string>({
   get(): string {
     return new Decimal(
@@ -31,6 +40,13 @@ const amountForInput = computed<string>({
   },
 });
 
+/**
+ * Compute a dynamic input width based on the visible length of the amount
+ * string. Periods count as half a character to keep alignment visually
+ * pleasing when using large numeric fonts.
+ *
+ * @returns {import('vue').ComputedRef<string>} CSS width string (e.g. "200px").
+ */
 const inputWidth = computed<string>(() => {
   const value = amountForInput.value ?? '';
 
@@ -45,6 +61,12 @@ const inputWidth = computed<string>(() => {
   return `${baseWidth + effectiveLength * extraWidthPerChar}px`;
 });
 
+/**
+ * Two-way computed binding for the payment description textarea.
+ * Reading returns the current description string; writing updates the store.
+ *
+ * @type {import('vue').ComputedRef<string>}
+ */
 const paymentDescription = computed({
   get(): string {
     return transactionStore.transaction.description ?? '';
